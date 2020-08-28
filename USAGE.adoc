@@ -1,0 +1,316 @@
+==== Broader Examples on the plugin Usage
+
+. <<git-properties-plugin, Git Properties Plugin>>
+. <<boot-run-task, Boot Run Task>>
+. <<boot-jar-task, Boot Jar Task>>
+. <<jib-configuration, JIB Configuration>>
+
+[#git-properties-plugin]
+== Git Properties Plugin
+
+If you wanted to apply https://github.com/n0mer/gradle-git-properties[git-properties-plugin] _without_ `0x-plugin-bom`, this is how your configuration might have looked like:
+
+[source]
+-----
+generateGitProperties.outputs.upToDateWhen {
+    false
+}
+
+gitProperties {
+    extProperty = 'exposedGitProperties' // git properties will be put in a map at project.ext.exposedGitProperties
+    customProperty 'git.build.version', { project.parent.version }
+    dotGitDirectory = "${project.rootDir}"
+}
+-----
+
+with `0x-plugin-bom` this will be automatically configured and you would not have to do anything (these are the only supported properties at the moment) You can see the pattern here:
+
+- `gitProperties.extProperty` is translated by `pluginProperties.git.extProperty`
+- `gitProperties.customProperty[]` is translated by `pluginProperties.git.exposedGitProperties`
+- `gitProperties.dotGitDirectory` is translated by `pluginProperties.git.dotGitDirectory`
+
+As such, simply apply `0x-plugin-bom` will generate the above configuration with defaults:
+
+- extProperty = "exposedGitProperties"
+- dotGitDirectory = project.rootDir
+- additionalGitProperties = ["git.build.version", "project.version OR self.version"]
+
+Let's say that you want a slightly different "git.build.version", you want to append `-SNAPSHOT`.
+This can be configured via:
+
+[source]
+----
+pluginProperties {
+
+    git {
+        additionalGitProperties = [
+                'git.build.version': { project.version }.call().asType(String.class) + "-SNAPSHOT"
+        ]
+    }
+
+}
+----
+
+as a result, if you run `gradle build --info...`:
+
+[source]
+----
+==== git-properties-plugin configured with :
+     gitProperty(ies) : {git.build.version=1.2.0-SNAPSHOT}
+     extProperty      : exposedGitProperties
+     dotGitDirectory  : /Users/ER/example/com
+----
+
+Notice that two properties were given default values, and one (that you specified) was overridden.
+
+On the other hand, if you want to add another property (another `customProperty` in the original plugin):
+
+[source]
+----
+pluginProperties {
+
+    git {
+        additionalGitProperties = [
+                'git.build.version': { project.version }.call().asType(String.class) + "-SNAPSHOT",
+                'git.build.host'   : 'localhost'
+        ]
+    }
+
+}
+----
+
+as a result of building this:
+
+[source]
+----
+==== git-properties-plugin configured with :
+     gitProperty(ies) : {git.build.version=1.2.0-SNAPSHOT, git.build.host=localhost}
+     extProperty      : exposedGitProperties
+     dotGitDirectory  : /Users/ER/example/com
+----
+
+So when you fire-up spring boot actuator (ultimately that is why you want this plugin, most-probably), you will see:
+
+[source]
+----
+"build": {
+      "version": "1.2.0-SNAPSHOT",
+      "user": {
+        "name": "ER",
+        "email": "example@gmail.com"
+      },
+      "host": "localhost"
+    }
+----
+
+[#boot-run-task]
+== Boot Run Task
+
+Same idea goes when configuring `bootRun` task.
+Without this plugin, it would look like this:
+
+[source]
+----
+bootRun {
+    main = 'com.example.com'
+    systemProperties System.properties
+    optimizedLunch true
+}
+----
+
+using this plugin, this will get automatically configured.
+
+Please note that `System.properties` are always added; they can't be removed.
+
+Overriding any of the above properties can be done via:
+
+[source]
+----
+pluginProperties {
+    run {
+        systemProperties = [
+                'key': 'value'
+        ]
+
+        main = 'com.example.MainBootClass'
+        optimizedLaunch = false
+    }
+}
+----
+
+The `key` that is added in `systemProperties` is going to be added to the existing `SystemProperties`, it is not overridden.
+This is by design, at least so far.
+
+[#boot-jar-task]
+== Boot Jar Task
+
+Same story goes to `bootJar` task, where it might be configured like this:
+
+[source]
+----
+bootJar {
+    mainClassName = 'com.example.com.App'
+    archiveFileName = 'app.jar'
+    manifest {
+        attributes(
+                'Build-Revision': "${-> project.ext.gitProps['git.commit.id.abbrev']}"  // Use GString lazy evaluation to delay until git properties are populated
+        )
+    }
+}
+----
+
+This plugin with auto-configure the above configuration.
+If, on the other hand, you would like to add one more manifest entry:
+
+[source]
+----
+
+pluginProperties {
+
+    jar {
+        manifestAttributes = [
+                'Key': 'Value'
+        ]
+    }
+
+}
+
+----
+
+As a result:
+
+[source]
+----
+ ==== 'bootJar' configured with :
+     mainClassName       : com.example.com.App
+     archiveName         : app.jar
+     manifestAttributes  : [Manifest-Version=1.0, Build-Version=285a216, Key=Value]
+----
+
+this will generate such entries in `MANIFEST.MF`:
+
+[source]
+----
+Manifest-Version: 1.0
+Build-Version: 285a216
+Start-Class: com.example.com.App
+----
+
+[#jib-configuration]
+== JIB Configuration
+
+The default property that is configured for the `from` extension is `image` with value : `adoptopenjdk/openjdk14:latest`.
+It can be overridden with :
+
+[source]
+----
+pluginProperties {
+
+    jib {
+        from {
+            image = 'adoptopenjdk/openjdk13:latest'
+        }
+    }
+
+}
+----
+
+The other property that is defaulted is `to.tags`.
+If a parent is found - it's `version` will be used; otherwise `project.version` is used.
+
+The easiest way to understand this is via an example.
+If your `parent.version` is `1.6.6` and you run `gradle wrapper 'jibDockerBuild'`, in logs you will see:
+
+[source]
+----
+ ==== 'JIB' configured with :
+     from.image       : adoptopenjdk/openjdk14:latest
+     to.tags          : [1.6.6]
+----
+
+At the same time, if you _add_ a `tags` in `build.gradle`:
+
+[source]
+----
+pluginProperties {
+
+    jib {
+
+        to {
+            tags = ['1', '2']
+        }
+    }
+
+}
+----
+
+The result will be:
+
+[source]
+----
+ ==== 'JIB' configured with :
+     from.image       : adoptopenjdk/openjdk14:latest
+     to.tags          : [1, 2, 1.6.6]
+----
+
+So, _at least_ one tag is always present, and defaulted according to the rules explained above.
+
+Of course, you could have an `ext` property that depends on an external property.
+For example:
+
+[source]
+----
+ext {
+    dockerTag = findProperty('docker.tag') ?: "${project.parent.version}"
+}
+----
+
+and then configure `jib` via:
+
+[source]
+----
+pluginProperties {
+
+    jib {
+        to {
+            tags = ["${-> project.ext.dockerTag}" as String]
+        }
+    }
+
+}
+----
+
+and run it via : `gradle wrapper '-Pdocker.tag=testTag' 'jibDockerBuild'`
+
+'''
+
+`jib.to.image` is a property that is not defaulted to any value in the plugin.
+You will need to specify that all the time.
+
+If your name is computed dinamically, you might want to leverage GString and `ext`.
+For example like this:
+
+[source]
+----
+ext {
+    dockerRegistryDn = findProperty('docker.registryDn') ?: 'hub'
+    dockerRegistryNs = findProperty('docker.registryNs') ?: '0x'
+    jibToImage = "${dockerRegistryDn}-${dockerRegistryNs}-${project.name}"
+}
+----
+
+[source]
+----
+pluginProperties {
+
+    jib {
+        to {
+            image = "${-> project.ext.jibToImage}"
+        }
+    }
+
+}
+----
+
+
+

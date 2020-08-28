@@ -1,0 +1,34 @@
+zero/x/plugin/bom/pojo/SelfBootRunTaskParameters.java
+ zero.x.plugin.bom.pojo.SelfBootRunTaskParameters
+zero/x/plugin/bom/exported/AutoConfigurePropertiesTask.java
+ zero.x.plugin.bom.exported.AutoConfigurePropertiesTask
+zero/x/plugin/bom/pojo/SelfGitPropertiesPluginParameters.java
+ zero.x.plugin.bom.pojo.SelfGitPropertiesPluginParameters
+zero/x/plugin/bom/configurers/SpringBootJarTaskConfiguration.java
+ zero.x.plugin.bom.configurers.SpringBootJarTaskConfiguration
+zero/x/plugin/bom/exported/SelfGitPropertiesPluginTask.java
+ zero.x.plugin.bom.exported.SelfGitPropertiesPluginTask
+zero/x/plugin/bom/pojo/SelfJibFromExtension.java
+ zero.x.plugin.bom.pojo.SelfJibFromExtension
+zero/x/plugin/bom/configurers/SpringBootRunTaskConfiguration.java
+ zero.x.plugin.bom.configurers.SpringBootRunTaskConfiguration
+zero/x/plugin/bom/util/Util.java
+ zero.x.plugin.bom.util.Util
+zero/x/plugin/bom/pojo/SelfJibToExtension.java
+ zero.x.plugin.bom.pojo.SelfJibToExtension
+zero/x/plugin/bom/pojo/SelfJibPluginParameters.java
+ zero.x.plugin.bom.pojo.SelfJibPluginParameters
+zero/x/plugin/bom/configurers/GitPropertiesTaskConfiguration.java
+ zero.x.plugin.bom.configurers.GitPropertiesTaskConfiguration
+zero/x/plugin/bom/exported/AutoConfigurePropertiesExtension.java
+ zero.x.plugin.bom.exported.AutoConfigurePropertiesExtension
+zero/x/plugin/bom/pojo/SelfJibContainerParameters.java
+ zero.x.plugin.bom.pojo.SelfJibContainerParameters
+zero/x/plugin/bom/exported/PluginEnhancer.java
+ zero.x.plugin.bom.exported.PluginEnhancer
+zero/x/plugin/bom/pojo/SelfBootJarTaskParameters.java
+ zero.x.plugin.bom.pojo.SelfBootJarTaskParameters
+zero/x/plugin/bom/configurers/JibUtil.java
+ zero.x.plugin.bom.configurers.JibUtil
+zero/x/plugin/bom/configurers/JibBuildDockerTaskConfiguration.java
+ zero.x.plugin.bom.configurers.JibBuildDockerTaskConfiguration

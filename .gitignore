@@ -1,0 +1,25 @@
+# Log files
+*.log
+
+# Maven build folder
+target/
+
+# TestNG output folder
+test-output/
+
+# Java class files
+*.class
+
+# Archive files
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# IntelliJ
+*.iml
+.idea/
+*.DS_Store
+.java-version

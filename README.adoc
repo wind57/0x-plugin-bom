@@ -1,0 +1,337 @@
+==== Overview
+
+. <<motivation, Motivation>>
+. <<what-is-0x-plugin-bom,What is 0x-plugin-bom?>>
+. <<Overview,Overview>>
+. <<gradle-git-properties-plugin, Gradle Git Properties plugin>>
+. <<boot-run-task, Boot Run Task>>
+. <<boot-jar-task, Boot Jar Task>>
+. <<jib-configuration, JIB Configuration>>
+
+[#motivation]
+== Motivation
+
+The reason I came up with this is simple.
+I work at a place where we use many micro-services and gradle.
+It turns out that the majority of the projects are set-up using the same plugins in the same manner (almost).
+Instead of copy/paste entire configuration in each `build.gradle` I thought about pre-configuring some properties and settings by applying a single plugin.
+The downside should be obvious: if you want to configure let's say `bootJar` with a property that this plugin does not (yet) support - this has to be fixed here first.
+
+This also means that there is a minor learning curve as it also requires to understand how properties from this plugin are transported to each individual task.
+Use with care.
+
+[#what-is-0x-plugin-bom]
+== What is 0x-plugin-bom
+
+It is an *auto-configuration* plugin that will *transparently* configure a few *delegate plugins* without any need from the user configuration.
+It will apply certain defaults to some plugins (that will be discussed below).
+Some of these default values can be overridden or added.
+
+[#Overview]
+== Overview
+
+In general, if you are happy with the defaults that this plugin applies, there is a single thing you need to add in your `build.gradle` file:
+
+[source]
+----
+plugins {
+    id '0x-plugin-bom' version '1.1.0'
+}
+----
+
+in turn this will auto-configure:
+
+. https://github.com/n0mer/gradle-git-properties
+
+. https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/html/
+
+. https://github.com/GoogleContainerTools/jib/tree/master/jib-gradle-plugin
+
+The defaults that these plugins are configured with are sensible to the company/products that I have been involved with.
+You might want to change them to suite your needs (or open a defect).
+The chapters that follow explain how to do that.
+
+[#gradle-git-properties-plugin]
+== Gradle Git Properties Plugin
+
+https://github.com/n0mer/gradle-git-properties (current supported version is `2.2.2`)
+
+By default, this plugin will configure (you need to consult the original plugin documentation to understand these properly):
+
+. one `gitProperty` called `git.build.version` property that is either taken from `parent.version` if a parent exists; or `self.version` if a parent does not exist.
+
+. `dotGitDirectory` that is set to gradle's `project.rootDir`
+
+. `extProperty` that is set to 'exposedGitProperties'
+
+This is how it would look like if these were defined explicitly (this can be used to override them).
+Remember that defining them like in the example below is not needed, since these are defaulted.
+
+[source]
+----
+pluginProperties {
+
+    git {
+        additionalGitProperties = [
+                'git.build.version': { project.parent.version }.call().asType(String.class)
+        ]
+
+        dotGitDirectory = project.rootDir
+        extProperty = 'exposedGitProperties'
+    }
+}
+----
+
+[TIP]
+To actually see what values a certain plugin will be configured with, you can run `gradle build --info` and for this plugin you will see something along the lines:
+
+[source]
+----
+==== git-properties-plugin configured with :
+     gitProperty(ies) : {git.build.version=1.4.2}
+     extProperty      : exposedGitProperties
+     dotGitDirectory  : /Users/zero-x/projects/zero-x-plugin-bom
+----
+
+TIP: To see some more example on how to set this up, look into link:USAGE.adoc#git-properties-plugin[git-properties more examples]
+
+[#boot-run-task]
+== Boot Run Task
+
+https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/html/#running-your-application
+(current supported version is `2.3.2.RELEASE`)
+
+By default, this plugin will configure `bootRun` with:
+
+. `main` - whatever class is found on the classpath with a `public static void main[String[] args]` method.
+This is what Spring does by default anyway.
+. `optimizedLaunch == false`; spring's default too.
+. `systemProperties == System::getProperties`.
+
+If you want to override any of these defaults:
+
+[source]
+----
+pluginProperties {
+    run {
+        systemProperties = [
+                'key': 'value'
+        ]
+
+        main = 'com.example.MainBootClass'
+        optimizedLaunch = false
+    }
+}
+----
+
+TIP: To see some more example on how to set this up, look into link:USAGE.adoc#boot-run-task[bootRun more examples]
+
+[#boot-jar-task]
+== Boot Jar Task
+
+https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/html/#packaging-executable-and-normal
+
+
+By default, this plugin will configure `bootJar` with:
+
+. `archiveFileName` - "app.jar"
+. `mainClassName` - whatever class is found on the classpath with a `public static void main(String[] args)` method.
+This is what Spring does by default anyway.
+. `manifestAttributes`, that is:
+
+[source]
+----
+ manifest {
+         attributes(
+                'Key': 'Value'
+         )
+}
+----
+
+with a single entry:
+
+`Build-Version` with value of `git.commit.id.abbrev`
+
+If you want to override any of these values:
+
+[source]
+-----
+pluginProperties {
+
+    jar {
+        archiveFileName = 'test.jar'
+        mainClassName = 'com.example.BootMain'
+        manifestAttributes = [
+                'Key': 'Value'
+        ]
+    }
+
+}
+-----
+
+TIP: To see some more example on how to set this up, look into link:USAGE.adoc#boot-jar-task[bootJar more examples]
+
+
+It would be a good idea to stop reading a bit now and look into USAGE.adoc for more explanations about these 3 types of plugins that get auto-configured
+
+[#jib-configuration]
+== JIB Configuration
+
+JIB Plugin (current supported version is `2.5.0`) is configured pretty much the same as the other plugins above.
+With the expection that some properties are mandatory and are not configured with any defaults.
+`from.image` _is_ defaulted to `adoptopenjdk/openjdk14:latest`.
+
+If you need a different `from.image` and would like to override this setting:
+
+[source]
+----
+pluginProperties {
+
+    jib {
+        from {
+            image = 'adoptopenjdk/openjdk13:latest'
+        }
+    }
+
+}
+----
+
+It will also create a default single element `Set` of `tags`, i.e.:
+
+[source]
+----
+to {
+   tags = '1.2.3'
+}
+----
+
+This set is populated with `project.parent.version` if a parent exists; otherwise `project.version`.
+
+Any supplied additional tag in the plugin extension will add to the existing tag.
+For example:
+
+[source]
+----
+pluginProperties {
+
+    jib {
+        to {
+            tags = ['1', '2']
+        }
+    }
+
+}
+----
+
+will configure _three_ tags : `1`, `2` and the default one.
+
+'''
+
+To configure `jib.to.image`:
+
+[source]
+----
+pluginProperties {
+
+    jib {
+        to {
+            image = "my-coolest-image"
+        }
+    }
+
+}
+----
+
+'''
+
+There is also `jib.container` that can be configured.
+It has one mandatory property : `mainClass`:
+
+[source]
+----
+pluginProperties {
+
+    jib {
+        container {
+            mainClass = 'com.example.App'
+        }
+    }
+
+}
+----
+
+If it is not set, there will be an error thrown.
+
+Also, `ports` _can_ be configured, but they are _not_ defaulted to any value.
+They can be set if needed:
+
+[source]
+----
+pluginProperties {
+
+    jib {
+        ports = ['8080/tcp']
+    }
+
+}
+----
+
+`container.jvmFlags` are defaulted to:
+
+[source]
+----
+
+        "-Duser.timezone=UTC",
+        "-XX:+UnlockExperimentalVMOptions",
+        "-XX:InitialRAMPercentage=70",
+        "-XX:InitialHeapSize=0",
+        "-XX:MaxRAMPercentage=70",
+        "-XX:+UseContainerSupport",
+        "-XX:-AlwaysPreTouch",
+        "-XX:+UseNUMA",
+        "-XX:+UseBiasedLocking",
+        "-XX:+DisableExplicitGC",
+        "-XX:+ExplicitGCInvokesConcurrent",
+        "-XX:+UseDynamicNumberOfGCThreads",
+        "-XX:+UseCountedLoopSafepoints",
+        "-XX:LoopStripMiningIter=500",
+        "-XX:LoopStripMiningIterShortLoop=50"
+----
+
+If these defaults are not what you need, you need to disable them, via:
+
+[source]
+----
+pluginProperties {
+
+    jib {
+        container {
+            mainClass = 'com.exampl.App'
+            defaultVMFlags = false
+        }
+    }
+
+}
+----
+
+In this case, no VM flag will be added.
+
+If on the other hand, you want to _add_ some VM flags and ignore the defaults:
+
+[source]
+----
+pluginProperties {
+
+    jib {
+        container {
+            mainClass = 'com.exampl.App'
+            defaultVMFlags = false
+            jvmFlags = ['-XX:+AlwaysPreTouch', '-XX:-UseContainerSupport']
+        }
+    }
+
+}
+----
+
+TIP: To see some more example on how to set this up, look into link:USAGE.adoc#jib-configuration[jib more examples]
+
