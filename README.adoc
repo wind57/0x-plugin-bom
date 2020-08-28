@@ -30,7 +30,7 @@ Some of these default values can be overridden or added.
 [#Overview]
 == Overview
 
-In general, if you are happy with the defaults that this plugin applies, there is a single thing you need to add in your `build.gradle` file:
+In general, if you are happy with the defaults that this plugin applies, there are very few things you need to add in your `build.gradle` file:
 
 [source]
 ----
@@ -38,6 +38,9 @@ plugins {
     id '0x-plugin-bom' version '1.1.0'
 }
 ----
+
+and also configure properties that have no defaults.
+This will be covered in later chapters.
 
 in turn this will auto-configure:
 
@@ -48,7 +51,7 @@ in turn this will auto-configure:
 . https://github.com/GoogleContainerTools/jib/tree/master/jib-gradle-plugin
 
 The defaults that these plugins are configured with are sensible to the company/products that I have been involved with.
-You might want to change them to suite your needs (or open a defect).
+You might want to change them to suite your needs (or open a defect here).
 The chapters that follow explain how to do that.
 
 [#gradle-git-properties-plugin]
