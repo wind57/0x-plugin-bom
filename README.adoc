@@ -11,10 +11,11 @@
 [#motivation]
 == Motivation
 
-The reason I came up with this is simple.
-I work at a place where we use many micro-services and gradle.
-It turns out that the majority of the projects are set-up using the same plugins in the same manner (almost).
-Instead of copy/paste entire configuration in each `build.gradle` I thought about pre-configuring some properties and settings by applying a single plugin.
+The idea to write a plugin that will configure some _other_, dependent plugins, came up a while ago.
+A lot of times, I keep copy-pasting various project configuratinos in `build.gradle` from project to project; at least for some dependent plugins.
+In the majority of times, they change very little and are configured in the same way.
+Thus, I thought about making a central place for the configured with some defaults (and possibility to override them).
+
 The downside should be obvious: if you want to configure let's say `bootJar` with a property that this plugin does not (yet) support - this has to be fixed here first.
 
 This also means that there is a minor learning curve as it also requires to understand how properties from this plugin are transported to each individual task.
@@ -30,7 +31,7 @@ Some of these default values can be overridden or added.
 [#Overview]
 == Overview
 
-In general, if you are happy with the defaults that this plugin applies, there is a single thing you need to add in your `build.gradle` file:
+In general, if you are happy with the defaults that this plugin applies, there are very few things you need to add in your `build.gradle` file:
 
 [source]
 ----
@@ -38,6 +39,9 @@ plugins {
     id '0x-plugin-bom' version '1.1.0'
 }
 ----
+
+and also configure properties that have no defaults.
+This will be covered in later chapters.
 
 in turn this will auto-configure:
 
@@ -48,7 +52,7 @@ in turn this will auto-configure:
 . https://github.com/GoogleContainerTools/jib/tree/master/jib-gradle-plugin
 
 The defaults that these plugins are configured with are sensible to the company/products that I have been involved with.
-You might want to change them to suite your needs (or open a defect).
+You might want to change them to suite your needs (or open a defect here).
 The chapters that follow explain how to do that.
 
 [#gradle-git-properties-plugin]
