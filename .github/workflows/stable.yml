@@ -21,7 +21,7 @@ jobs:
     - name: Build with Gradle
       run: gradle build
       
-    - uses: actions/checkout@stable
+    - uses: actions/checkout@master
       with:
         fetch-depth: 0  
     - name: Bump version and push tag
