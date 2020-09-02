@@ -6,7 +6,7 @@ plugins {
 apply plugin: 'java-gradle-plugin'
 
 group '0x.plugin.bom'
-version '1.1.0'
+version '0.0.2'
 
 gradlePlugin {
     plugins {
@@ -38,4 +38,11 @@ dependencies {
 
     testCompileOnly 'org.projectlombok:lombok:1.18.12'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+}
+
+// needed for release, used by github actions
+task getVersion {
+    doFirst {
+        println "${project.version}"
+    }
 }
