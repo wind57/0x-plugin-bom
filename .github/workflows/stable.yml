@@ -23,7 +23,7 @@ jobs:
       
     - name: get current project version
       id: version
-      run: "::set-output name=projectVersion::$(gradle -q getVersion)"
+      run: echo "::set-output name=projectVersion::$(gradle -q getVersion)"
       
     - uses: actions/checkout@master
       with:
