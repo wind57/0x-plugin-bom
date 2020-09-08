@@ -6,11 +6,7 @@ plugins {
 apply plugin: 'java-gradle-plugin'
 
 group '0x.plugin.bom'
-<<<<<<< HEAD
 version '0.0.10'
-=======
-version '0.0.9'
->>>>>>> develop
 
 gradlePlugin {
     plugins {
