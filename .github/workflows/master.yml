@@ -58,14 +58,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        id: checkout-code
+        # until I figure out a workign way according to this : https://github.com/actions/starter-workflows/issues/68
+        run: echo "::set-output name=projectVersion::$(gradle -q getVersion)"
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         with:
-          tag_name: ${{ jobs.build.env.CUSTOM_TAG }}
-          release_name: Release ${{ jobs.build.env.CUSTOM_TAG }}
+          tag_name: ${{ steps.checkout-code.outputs.projectVersion }}
+          release_name: Release ${{ steps.checkout-code.outputs.projectVersion }}
           body: |
             Changes in this Release
             - First Change
