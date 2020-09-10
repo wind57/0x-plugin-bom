@@ -7,7 +7,7 @@ plugins {
 apply plugin: 'java-gradle-plugin'
 
 group '0x.plugin.bom'
-version '1.0.2'
+version '1.1.0'
 
 gradlePlugin {
     plugins {
