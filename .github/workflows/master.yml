@@ -6,6 +6,8 @@ on:
 
 jobs:
 
+  # gradle build
+  # create a tag from stable branch that matches the version in build.gradle (via "gradle -q getVersion")
   gradle build
   create a tag from stable branch that matches the version in build.gradle (via "gradle -q getVersion")
   build:
@@ -86,4 +88,3 @@ jobs:
             - Second Change
           draft: false
           prerelease: false
-
