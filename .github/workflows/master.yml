@@ -64,8 +64,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         with:
-          tag_name: ${{ env.CUSTOM_TAG }}
-          release_name: Release ${{ env.CUSTOM_TAG }}
+          tag_name: ${{ jobs.build.env.CUSTOM_TAG }}
+          release_name: Release ${{ jobs.build.env.CUSTOM_TAG }}
           body: |
             Changes in this Release
             - First Change

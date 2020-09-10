@@ -1,20 +1,29 @@
 plugins {
     id 'java-gradle-plugin'
     id 'maven-publish'
+    id 'com.gradle.plugin-publish' version '0.12.0'
 }
 
 apply plugin: 'java-gradle-plugin'
 
 group '0x.plugin.bom'
-version '0.0.10'
+version '1.0.0'
 
 gradlePlugin {
     plugins {
         pluginDecorator {
-            id = '0x-plugin-bom'
+            id = 'wind57.0x-plugin-bom'
+            displayName = '0x-plugin-bom'
+            description = 'defaulter for other dependent plugins'
             implementationClass = 'zero.x.plugin.bom.exported.PluginEnhancer'
         }
     }
+}
+
+pluginBundle {
+    website = 'https://github.com/wind57/0x-plugin-bom'
+    vcsUrl = 'https://github.com/wind57/0x-plugin-bom'
+    tags = ['jib', 'spring-boot', 'git-properties']
 }
 
 publishing {
